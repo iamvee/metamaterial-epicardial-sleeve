@@ -1009,6 +1009,3 @@ class AbaqusVolumeAnalyzer:
                 for i in range(len(self.abaqus_input.splitted_content.get('steps', [])))
             }
         }
-
-
-

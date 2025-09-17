@@ -1,0 +1,5 @@
+* [net twist calculations](./net_twist/net_twist.ipynb)
+* [visualized plots and data](./plot_data/pickled_2.ipynb)
+* [auto generate fiber orientation calculation codes using jinja templates](./fiber_orientation/)
+* [sleeve geometries $S1$ to $S5$ ](./sleeve_geometries/)
+* [post processing dat files for spheroidals $S0$ and $A0$](./spheroidal_geometries/post_proc.py)
