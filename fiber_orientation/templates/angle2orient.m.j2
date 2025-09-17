@@ -1,0 +1,41 @@
+function angle2orient(examp)
+    longitudinal_vector = [0 1 0];
+    central_point = dlmread('{{ centroid_file }}').';
+    nodes = dlmread('{{ nodes_file }}');
+    elems = dlmread('{{ elements_file }}');
+    angles = dlmread('{{ angles_file }}');
+    Nelem = length(elems(:,1));
+    Nnodes = length(nodes(:,1));
+    cent = nan(Nelem, 3);
+    for ele = 1:Nelem
+        node1 = nodes(elems(ele,2),2:4);
+        node2 = nodes(elems(ele,3),2:4);
+        node3 = nodes(elems(ele,4),2:4);
+        node4 = nodes(elems(ele,5),2:4);
+        cent_x = mean([node1(1) node2(1) node3(1) node4(1)]);
+        cent_y = mean([node1(2) node2(2) node3(2) node4(2)]);
+        cent_z = mean([node1(3) node2(3) node3(3) node4(3)]);
+        cent(ele,:) = [cent_x cent_y cent_z];
+    end
+    [m, long_component] = max(longitudinal_vector);
+    circ_vector = nan(Nelem,3);
+    for ele = 1:Nelem
+        central_point(long_component) = cent(ele,long_component);
+        radial_vector = cent(ele,:) - central_point;
+        circ_vector(ele,:) = cross(longitudinal_vector, radial_vector)/norm(cross(longitudinal_vector, radial_vector));
+    end
+    fiber = nan(Nelem,6);
+    for ele = 1:Nelem
+        theta = angles(ele,2) * pi/180;
+        k = cross(circ_vector(ele,:), longitudinal_vector)...
+            /norm(cross(circ_vector(ele,:), longitudinal_vector));
+        v = circ_vector(ele,:);
+        fiber(ele,1:3) = v*cos(theta)+cross(k,v)*sin(theta)+k*dot(k,v)*(1-cos(theta));
+        fiber(ele,1:3) = fiber(ele,1:3)/norm(fiber(ele,1:3));
+        central_point(long_component) = cent(ele,long_component);
+        radial_vector = cent(ele,:) - central_point;
+        fiber(ele,4:6) = radial_vector/norm(radial_vector);
+    end
+    
+    fiber = [(1:size(fiber,1))', fiber];
+    dlmwrite(fullfile('.',sprintf('orientations-%s.txt', examp)), fiber,'Delimiter',',')

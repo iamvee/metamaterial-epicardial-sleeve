@@ -1,0 +1,37 @@
+*HEADING
+Job: {{ job_name }}
+*PREPRINT, ECHO=NO, MODEL=NO, HISTORY=NO, CONTACT=NO
+*NODE
+*INCLUDE, INPUT={{ nodes_file }}
+*ELEMENT, TYPE={{ element_type }}
+*INCLUDE, INPUT={{ elements_file }}
+
+{% for set_file in set_files %}
+*INCLUDE, INPUT={{ set_file }}
+{% endfor %}
+
+*SOLID SECTION, ELSET={{ solid_section_set }}, MATERIAL={{ material_name }}
+*MATERIAL, NAME={{ material_name }}
+*CONDUCTIVITY
+{{ conductivity }}
+
+*STEP, NAME={{ step_name }}, NLGEOM={{ nlgeom }}, INC={{ inc }}
+*HEAT TRANSFER, STEADY STATE, DELTMX={{ deltmx }}
+1., 1., {{ tolerance }}, 1.
+
+{% for boundary in boundaries %}
+*BOUNDARY
+{{ boundary.set_name }}, {{ boundary.direction }}, {{ boundary.direction }}, {{ boundary.value }}
+{% endfor %}
+
+*RESTART, WRITE, FREQUENCY={{ restart_frequency }}
+*OUTPUT, HISTORY, FREQUENCY={{ history_frequency }}
+*OUTPUT, FIELD, TIME INTERVAL={{ time_interval }}, VARIABLE=PRESELECT
+*Output, field
+*Node Output
+{{ node_outputs | join(', ') }}
+*Element Output, directions=YES
+{{ element_outputs | join(', ') }}
+*EL PRINT, ELSET={{ solid_section_set }}, POSITION=CENTROIDAL
+{{ el_print_outputs | join(', ') }}
+*END STEP
